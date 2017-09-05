@@ -14,6 +14,10 @@ NAME = ft_nm
 
 CC = clang
 CFLAGS = -Wall -Wextra -Werror
+LDFLAGS = -L libft -lft
+
+LIBPATH = libft/
+LIB = $(LIBPATH)/libft.a
 
 INCLUDES = includes/
 
@@ -25,21 +29,42 @@ OBJS = $(patsubst %.c, $(OBJDIR)%.o, $(SRCS))
 
 default: all
 
-all: $(NAME)
+all: $(LIB) $(NAME)
+	@echo " # sh : Job done $(shell pwd)/$(NAME)"
 
 $(NAME): $(OBJS)
-	$(CC) -o $(NAME) $(OBJS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(NAME) $(OBJS)
+
+$(LIB):
+	@make -C $(LIBPATH)
 
 $(OBJDIR)%.o: %.c $(OBJDIR)
-	$(CC) $(CFLAGS) -o $@ -c $< -I $(INCLUDES)
+	@echo " + sh : Compiling $(OBJ_DIR) < $^"
+	@$(CC) $(CFLAGS) -o $@ -c $< -I libft/include -I $(INCLUDES)
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
+
 clean:
-	rm -rf $(OBJ)
+	make -C libft/ clean
+	@echo " $(shell\
+		if [ -d $(OBJ_DIR) ]; then\
+			echo "- sh : Removing $(OBJ_DIR) with";\
+			ls $(OBJ_DIR) | wc -w; echo "*.o";\
+			rm -Rf $(OBJ_DIR);\
+		else\
+			echo "# sh : Nothing to clean";\
+		fi)"
 
 fclean: clean
-	rm -rf $(NAME)
+	make -C libft/ fclean
+	@echo " $(shell\
+		if [ -f $(NAME) ]; then\
+			echo "- sh : Removing $ $(NAME) ";\
+			rm -f $(NAME);\
+		else\
+			echo "# sh : Nothing to fclean";\
+		fi)"
 
 re: fclean all
 
