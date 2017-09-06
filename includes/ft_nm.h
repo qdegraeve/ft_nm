@@ -16,6 +16,18 @@ union	u_cmp
 	unsigned long	value;
 };
 
+typedef struct s_flags
+{
+	char	p;
+	char	a;
+	char	n;
+	char	r;
+	char	u;
+	char	U;
+	int		nb_files;
+	char	**files;
+}				t_flags;
+
 typedef struct	s_symbol
 {
 	char			type;
