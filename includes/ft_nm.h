@@ -18,14 +18,20 @@ union	u_cmp
 
 typedef struct s_flags
 {
-	char	p;
-	char	a;
-	char	n;
-	char	r;
-	char	u;
-	char	U;
-	int		nb_files;
-	char	**files;
+	char				p;
+	char				a;
+	char				n;
+	char				r;
+	char				u;
+	char				U;
+	char				text_sect;
+	char				data_sect;
+	char				bss_sect;
+	int					nb_files;
+	int					nb_sects;
+	char				**files;
+	struct section		**sects;
+	struct section_64	**sects64;
 }				t_flags;
 
 typedef struct	s_symbol
