@@ -37,9 +37,18 @@ typedef struct s_flags
 typedef struct	s_symbol
 {
 	char			type;
+	uint8_t			n_type;
+	uint8_t			n_sect;
+	uint64_t		value;
 	char			*name;
-	struct nlist_64	symbol;
 	struct s_symbol	*next;
 }				t_symbol;
+
+void		nm(void *ptr, t_flags flags);
+
+int			no_comp(t_symbol *sym1, t_symbol *sym2);
+int			name_comp(t_symbol *sym1, t_symbol *sym2);
+int			value_comp(t_symbol *sym1, t_symbol *sym2);
+
 
 #endif

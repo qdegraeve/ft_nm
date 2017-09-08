@@ -22,7 +22,8 @@ LIB = $(LIBPATH)/libft.a
 INCLUDES = includes/
 
 VPATH = srcs/
-SRCS = ft_nm.c
+SRCS = ft_nm.c \
+	   handler_64.c
 
 OBJDIR = objs/
 OBJS = $(patsubst %.c, $(OBJDIR)%.o, $(SRCS))
