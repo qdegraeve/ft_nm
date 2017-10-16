@@ -5,6 +5,7 @@
 # include <sys/mman.h>
 # include <mach-o/loader.h>
 # include <mach-o/nlist.h>
+# include <mach-o/fat.h>
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <stdlib.h>
@@ -18,6 +19,7 @@ union	u_cmp
 
 typedef struct s_flags
 {
+	char				should_swap;
 	char				p;
 	char				a;
 	char				n;
@@ -28,6 +30,7 @@ typedef struct s_flags
 	char				data_sect;
 	char				bss_sect;
 	int					nb_files;
+	int 				file_offset;
 	int					nb_sects;
 	char				**files;
 	struct section		**sects;
@@ -44,11 +47,27 @@ typedef struct	s_symbol
 	struct s_symbol	*next;
 }				t_symbol;
 
+// NM handlers
 void		nm(void *ptr, t_flags flags);
+void		handle_32(void *ptr, t_flags flags);
+void		handle_64(void *ptr, t_flags flags);
+void		organizer32(int nsyms, int symoff, int stroff, void *ptr, t_flags flags);
+void		organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags);
+char		get_type(uint8_t n_type, uint8_t n_sect, t_flags flags);
+t_symbol	*create_elem64(struct nlist_64 symbol, char *name, t_flags flags);
+t_symbol	*create_elem32(struct nlist symbol, char *name, t_flags flags);
+void		insert_at(t_symbol **list, t_symbol *new, t_flags flags);
+void		print_output(t_symbol *symbols);
+void		handle_fat(void *ptr, t_flags flags);
 
+
+// Comparison function
 int			no_comp(t_symbol *sym1, t_symbol *sym2);
 int			name_comp(t_symbol *sym1, t_symbol *sym2);
 int			value_comp(t_symbol *sym1, t_symbol *sym2);
 
+// TODO: Swap functions
+uint16_t		swap_uint16(uint16_t to_swap);
+uint32_t		swap_uint32(uint32_t to_swap);
 
 #endif

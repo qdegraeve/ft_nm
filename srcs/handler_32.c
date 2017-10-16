@@ -1,6 +1,6 @@
 #include "ft_nm.h"
 
-t_symbol	*create_elem64(struct nlist_64 symbol, char *name, t_flags flags)
+t_symbol	*create_elem32(struct nlist symbol, char *name, t_flags flags)
 {
 	t_symbol 		*new;
 
@@ -15,11 +15,11 @@ t_symbol	*create_elem64(struct nlist_64 symbol, char *name, t_flags flags)
 	return (new);
 }
 
-void	organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
+void	organizer32(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
 {
 	int				i;
 	int				y;
-	struct nlist_64	*array;
+	struct nlist	*array;
 	char			*str_table;
 	t_symbol		*symbols;
 	t_symbol		*new;
@@ -33,7 +33,7 @@ void	organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
 	{
 		if (!(array[i].n_type & N_STAB) || flags.a)
 		{
-			if (!(new = create_elem64(array[i], str_table + array[i].n_un.n_strx, flags)))
+			if (!(new = create_elem32(array[i], str_table + array[i].n_un.n_strx, flags)))
 				return ;
 			insert_at(&symbols, new, flags);
 		}
@@ -42,13 +42,13 @@ void	organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
 	print_output(symbols);
 }
 
-void	get_sects_flags64(struct segment_command_64 *seg, t_flags *flags)
+void	get_sects_flags32(struct segment_command *seg, t_flags *flags)
 {
-	struct section_64	*sect;
+	struct section		*sect;
 	uint32_t			i;
 
 	i = 0;
-	sect = (struct section_64 *)((char *)seg + sizeof(struct segment_command_64));
+	sect = (struct section *)((char *)seg + sizeof(struct segment_command));
 	flags->nb_sects += seg->nsects;
 	while (i < seg->nsects)
 	{
@@ -65,28 +65,28 @@ void	get_sects_flags64(struct segment_command_64 *seg, t_flags *flags)
 	}
 }
 
-void	handle_64(void *ptr, t_flags flags)
+void	handle_32(void *ptr, t_flags flags)
 {
 	int							i;
 	int							ncmds;
-	struct mach_header_64		*header;
+	struct mach_header			*header;
 	struct load_command			*lc;
 	struct symtab_command		*command;
 	
 	i = 0;
-	header = (struct mach_header_64*)ptr;
+	header = (struct mach_header*)ptr;
 	ncmds = header->ncmds;
-	lc = ptr + sizeof(struct mach_header_64);
+	lc = ptr + sizeof(struct mach_header);
 	while (i < ncmds)
 	{
 		if (lc->cmd == LC_SYMTAB)
 		{
 			command = (struct symtab_command*)lc;
-			organizer64(command->nsyms, command->symoff, command->stroff, ptr, flags);
+			organizer32(command->nsyms, command->symoff, command->stroff, ptr, flags);
 			break;
 		}
-		else if (lc->cmd == LC_SEGMENT_64)
-			get_sects_flags64((struct segment_command_64*)lc, &flags);
+		else if (lc->cmd == LC_SEGMENT)
+			get_sects_flags32((struct segment_command*)lc, &flags);
 		lc = (void *)lc + lc->cmdsize;
 		i++;
 	}

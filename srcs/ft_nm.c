@@ -71,14 +71,17 @@ int		main(int ac, char **av)
 {
 	int			fd;
 	int			exit_code;
+	int			i;
 	struct stat	buf;
 	void		*ptr;
 	t_flags		flags;
 
+	i = -1;
 	exit_code = EXIT_SUCCESS;
 	flags = parse_cmd(ac, av);
-	while (*(flags.files))
+	while (++i < flags.nb_files)
 	{
+		flags.file_offset = i;
 		if ((fd = open(*(flags.files), O_RDONLY)) < 0)
 		{
 			ft_printf("nm: %s: No such file or directory.\n", *(flags.files));
