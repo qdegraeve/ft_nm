@@ -2,36 +2,36 @@
 
 char	get_type(uint8_t n_type, uint8_t n_sect, t_flags flags)
 {
-		int type;
+	int type;
 
-		type = n_type & N_TYPE;
-		if (type == N_UNDF)
-			type = 'u';
-		else if (type == N_PBUD)
-			type = 'u';
-		else if (type == N_ABS)
-			type = 'a';
-		else if (type == N_SECT)
-		{
-			if (n_sect == flags.text_sect)
-				type = 't';
-			else if (n_sect == flags.data_sect)
-				type = 'd';
-			else if (n_sect == flags.bss_sect)
-				type = 'b';
-		}
-		else if (type == N_INDR)
-			type = 'i';
+	type = n_type & N_TYPE;
+	if (type == N_UNDF)
+		type = 'u';
+	else if (type == N_PBUD)
+		type = 'u';
+	else if (type == N_ABS)
+		type = 'a';
+	else if (type == N_SECT)
+	{
+		if (n_sect == flags.text_sect)
+			type = 't';
+		else if (n_sect == flags.data_sect)
+			type = 'd';
+		else if (n_sect == flags.bss_sect)
+			type = 'b';
 		else
-			type = '?';
-		if ((n_type & N_EXT) && type != '?')
-			type = ft_toupper(type);
-		return (type);
+			type = 's';
+	}
+	else if (type == N_INDR)
+		type = 'i';
+	if ((n_type & N_EXT) && type != '?')
+		type = ft_toupper(type);
+	return (type);
 }
 
-void		insert_at(t_symbol **list, t_symbol *new, t_flags flags)
+void	insert_at(t_symbol **list, t_symbol *new, t_flags flags)
 {
-	t_symbol 		*tmp;
+	t_symbol		*tmp;
 	int				(*comp)(t_symbol*, t_symbol*);
 
 	tmp = *list;
@@ -47,7 +47,7 @@ void		insert_at(t_symbol **list, t_symbol *new, t_flags flags)
 			if (!tmp->next || comp(new, tmp->next) <= 0)
 			{
 				new->next = tmp->next;
-				tmp->next = new;			
+				tmp->next = new;
 				return ;
 			}
 			tmp = tmp->next;
@@ -60,16 +60,19 @@ void		insert_at(t_symbol **list, t_symbol *new, t_flags flags)
 	}
 }
 
-void	print_output(t_symbol *symbols)
+void	print_output(t_symbol *symbols, t_flags flags)
 {
 	t_symbol	*to_del;
+	int			size;
 
+	size = flags.is_32 ? 8 : 16;
 	while (symbols)
 	{
-		if ((symbols->n_type & N_TYPE) == N_PBUD || (symbols->n_type & N_TYPE) == N_UNDF)
-			ft_printf("%17c", ' ');
+		if ((symbols->n_type & N_TYPE) == N_PBUD ||
+				(symbols->n_type & N_TYPE) == N_UNDF)
+			ft_printf("%*c ", size, ' ');
 		else
-			ft_printf("%016llx ",  symbols->value);
+			ft_printf("%0*llx ", size, symbols->value);
 		ft_printf("%c ", symbols->type);
 		ft_printf("%s\n", symbols->name);
 		free(symbols->name);
@@ -83,12 +86,14 @@ void	nm(void *ptr, t_flags flags)
 {
 	unsigned int		magic_number;
 
-	magic_number = *(unsigned int *) ptr;
-	if (magic_number == MH_CIGAM || magic_number == MH_CIGAM_64 || magic_number == FAT_CIGAM)
+	magic_number = *(unsigned int *)ptr;
+	if (magic_number == MH_CIGAM ||
+			magic_number == MH_CIGAM_64 ||
+			magic_number == FAT_CIGAM)
 		flags.should_swap = 1;
-	if (magic_number == MH_MAGIC_64)
+	if (magic_number == MH_MAGIC_64 || magic_number == MH_CIGAM_64)
 		handle_64(ptr, flags);
-	else if (magic_number == MH_MAGIC)
+	else if (magic_number == MH_MAGIC || magic_number == MH_CIGAM)
 		handle_32(ptr, flags);
 	else if (magic_number == FAT_MAGIC || magic_number == FAT_CIGAM)
 		handle_fat(ptr, flags);

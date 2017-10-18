@@ -9,7 +9,12 @@ int		no_comp(t_symbol *sym1, t_symbol *sym2)
 
 int		name_comp(t_symbol *sym1, t_symbol *sym2)
 {
-	return (ft_strcmp(sym1->name, sym2->name));
+	int		res;
+
+	res = ft_strcmp(sym1->name, sym2->name);
+	if (res == 0)
+		res = value_comp(sym1, sym2);
+	return (res);
 }
 
 int		value_comp(t_symbol *sym1, t_symbol *sym2)

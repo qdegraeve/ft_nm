@@ -8,7 +8,8 @@ void	too_much(char flag)
 
 void	unknown_flag(char flag)
 {
-	ft_printf("Unknown command : %c\nUsage : ./ft_nm -parnuU [ files ]\n", flag);
+	ft_printf("Unknown command : %c\nUsage : ./ft_nm -parnuU [ files ]\n",
+		flag);
 	exit(EXIT_FAILURE);
 }
 
@@ -28,7 +29,7 @@ void	parse_flags(char *arg, t_flags *flags)
 		else if (*arg == 'u')
 			(*flags).u ? too_much(*arg) : (*flags).u++;
 		else if (*arg == 'U')
-			(*flags).U ? too_much(*arg) : (*flags).U++;
+			(*flags).u_up ? too_much(*arg) : (*flags).u_up++;
 		else
 			unknown_flag(*arg);
 		arg++;
@@ -62,12 +63,18 @@ t_flags	parse_cmd(int ac, char **av)
 	return (flags);
 }
 
-// int		process_files(t_flags flags)
-// {
+char	*find_arch(char **env)
+{
+	while (env)
+	{
+		if (ft_strncmp(*env, "_system_arch", 12) == 0)
+			return (*env + 13);
+		env++;
+	}
+	return (NULL);
+}
 
-// }
-
-int		main(int ac, char **av)
+int		main(int ac, char **av, char **env)
 {
 	int			fd;
 	int			exit_code;
@@ -79,6 +86,7 @@ int		main(int ac, char **av)
 	i = -1;
 	exit_code = EXIT_SUCCESS;
 	flags = parse_cmd(ac, av);
+	flags.arch = ft_strdup(find_arch(env));
 	while (++i < flags.nb_files)
 	{
 		flags.file_offset = i;
@@ -96,7 +104,8 @@ int		main(int ac, char **av)
 			perror("fstat");
 			return (EXIT_FAILURE);
 		}
-		if ((ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+		if ((ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
+			== MAP_FAILED)
 		{
 			perror("mmap");
 			return (EXIT_FAILURE);
@@ -107,6 +116,7 @@ int		main(int ac, char **av)
 			perror("munmap");
 			return (EXIT_FAILURE);
 		}
+		reset_flags(&flags);
 		flags.files++;
 	}
 	return (EXIT_SUCCESS);
