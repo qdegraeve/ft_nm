@@ -43,7 +43,7 @@ t_flags	parse_cmd(int ac, char **av)
 
 	i = 0;
 	ft_bzero(&flags, sizeof(t_flags*));
-	flags.files = (char**)malloc(sizeof(char*) * (ac + 1));
+	flags.files = (char**)malloc(sizeof(char*) * (ac));
 	while (++i < ac)
 	{
 		if (av[i][0] == '-')
@@ -65,13 +65,13 @@ t_flags	parse_cmd(int ac, char **av)
 
 char	*find_arch(char **env)
 {
-	while (env)
+	while (*env)
 	{
 		if (ft_strncmp(*env, "_system_arch", 12) == 0)
 			return (*env + 13);
 		env++;
 	}
-	return (NULL);
+	return ("");
 }
 
 int		main(int ac, char **av, char **env)
@@ -81,24 +81,25 @@ int		main(int ac, char **av, char **env)
 	int			i;
 	struct stat	buf;
 	void		*ptr;
+	char		**tmp;
 	t_flags		flags;
 
 	i = -1;
 	exit_code = EXIT_SUCCESS;
 	flags = parse_cmd(ac, av);
-	flags.arch = ft_strdup(find_arch(env));
+	tmp = flags.files;
+	flags.cputype = cpu_type(find_arch(env));
 	while (++i < flags.nb_files)
 	{
-		flags.file_offset = i;
 		if ((fd = open(*(flags.files), O_RDONLY)) < 0)
 		{
-			ft_printf("nm: %s: No such file or directory.\n", *(flags.files));
+			write(2, "ft_nm: ", 6);
+			ft_putstr_fd(*(flags.files), 2);
+			write(2, " No such file or directory.\n", 28);
 			exit_code = EXIT_FAILURE;
 			flags.files++;
 			continue;
 		}
-		if (flags.nb_files > 1)
-			ft_printf("\n%s:\n", *(flags.files));
 		if (fstat(fd, &buf) > 0)
 		{
 			perror("fstat");
@@ -116,8 +117,10 @@ int		main(int ac, char **av, char **env)
 			perror("munmap");
 			return (EXIT_FAILURE);
 		}
-		reset_flags(&flags);
+		reset_flags(&flags, 0);
+		ft_strdel((flags.files));
 		flags.files++;
 	}
+	free(tmp);
 	return (EXIT_SUCCESS);
 }

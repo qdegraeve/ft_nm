@@ -66,6 +66,8 @@ void	print_output(t_symbol *symbols, t_flags flags)
 	int			size;
 
 	size = flags.is_32 ? 8 : 16;
+	if (!flags.is_fat)
+		ft_printf("\n%s:\n", *(flags.files));
 	while (symbols)
 	{
 		if ((symbols->n_type & N_TYPE) == N_PBUD ||
@@ -97,4 +99,10 @@ void	nm(void *ptr, t_flags flags)
 		handle_32(ptr, flags);
 	else if (magic_number == FAT_MAGIC || magic_number == FAT_CIGAM)
 		handle_fat(ptr, flags);
+	else
+	{
+		write(2, "ft_nm: ", 7);
+		ft_putstr_fd(*(flags.files), 2);
+		write(2, " The file was not recognized as a valid object file\n\n", 54);
+	}
 }

@@ -25,6 +25,7 @@ typedef struct	s_cpu_type_names {
 typedef struct	s_flags
 {
 	char				should_swap;
+	char				is_fat;
 	char				p;
 	char				a;
 	char				n;
@@ -36,12 +37,10 @@ typedef struct	s_flags
 	char				data_sect;
 	char				bss_sect;
 	int					nb_files;
-	int					file_offset;
 	int					nb_sects;
-	char				*arch;
+	unsigned int		nfat_arch;
+	cpu_type_t			cputype;
 	char				**files;
-	struct section		**sects;
-	struct section_64	**sects64;
 }				t_flags;
 
 typedef struct	s_symbol
@@ -77,7 +76,8 @@ void					handle_fat(void *ptr, t_flags flags);
 /*
 ** Shared functions
 */
-void					reset_flags(t_flags *flags);
+void					reset_flags(t_flags *flags, char fat);
+cpu_type_t				cpu_type(char *cpu_type_name);
 
 /*
 ** Comparison function
