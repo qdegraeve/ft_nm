@@ -99,6 +99,8 @@ void	nm(void *ptr, t_flags flags)
 		handle_32(ptr, flags);
 	else if (magic_number == FAT_MAGIC || magic_number == FAT_CIGAM)
 		handle_fat(ptr, flags);
+	else if (ft_strncmp(ARMAG, (char*)ptr, 8) == 0)
+		handle_lib(ptr, flags);
 	else
 	{
 		write(2, "ft_nm: ", 7);

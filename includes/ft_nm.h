@@ -10,6 +10,8 @@
 # include <sys/stat.h>
 # include <stdlib.h>
 # include "../libft/include/ft_printf.h"
+# include <ar.h>
+
 
 union			u_cmp
 {
@@ -59,6 +61,7 @@ typedef struct	s_symbol
 void					nm(void *ptr, t_flags flags);
 void					handle_32(void *ptr, t_flags flags);
 void					handle_64(void *ptr, t_flags flags);
+void					handle_lib(void *ptr, t_flags flags);
 void					organizer32(int nsyms, int symoff,
 							int stroff, void *ptr, t_flags flags);
 void					organizer64(int nsyms, int symoff,

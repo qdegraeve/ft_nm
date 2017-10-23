@@ -122,5 +122,5 @@ int		main(int ac, char **av, char **env)
 		flags.files++;
 	}
 	free(tmp);
-	return (EXIT_SUCCESS);
+	return (exit_code);
 }

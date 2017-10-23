@@ -61,8 +61,6 @@ int					look_for_arch(struct fat_arch *fat_arch,
 	i = 0;
 	while (i++ < nfat_arch)
 	{
-		// ft_printf("debug: flags.cputype == [%d] -- arch cputype == [%d]\n", flags.cputype, swap_32(fat_arch->cputype));
-		// ft_printf("debug: x86_64 == [%d]\n", CPU_TYPE_X86_64);
 		if (flags.cputype == (cpu_type_t)swap_32(fat_arch->cputype))
 		{
 			reset_flags(&flags, 1);
@@ -85,7 +83,6 @@ void				handle_fat(void *ptr, t_flags flags)
 	fat_arch = (struct fat_arch*)(((struct fat_header*)ptr) + 1);
 	if (look_for_arch(fat_arch, ptr, flags.nfat_arch, flags))
 		return ;
-	// ft_printf("debug: flags.nfat_arch == [%d]\n", flags.nfat_arch);
 	while (i++ < flags.nfat_arch)
 	{
 		reset_flags(&flags, 1);

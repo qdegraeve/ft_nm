@@ -25,9 +25,10 @@ VPATH = srcs/
 SRCS = ft_nm.c \
 	   handler_64.c \
 	   handler_32.c \
+	   fat_handler.c \
+	   lib_handler.c \
 	   shared.c \
 	   comp_tools.c \
-	   fat_handler.c \
 	   swap.c
 
 OBJDIR = objs/
