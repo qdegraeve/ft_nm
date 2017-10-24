@@ -12,7 +12,10 @@ void				reset_flags(t_flags *flags, char fat)
 {
 	flags->is_fat = fat;
 	if (!fat)
+	{
 		flags->nfat_arch = 0;
+		flags->file_size = 0;
+	}
 	flags->is_32 = 0;
 	flags->should_swap = 0;
 	flags->text_sect = 0;

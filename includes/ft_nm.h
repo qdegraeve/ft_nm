@@ -26,6 +26,7 @@ typedef struct	s_cpu_type_names {
 
 typedef struct	s_flags
 {
+	char				exit_code;
 	char				should_swap;
 	char				is_fat;
 	char				p;
@@ -35,6 +36,7 @@ typedef struct	s_flags
 	char				u;
 	char				u_up;
 	char				is_32;
+	off_t				file_size;
 	char				text_sect;
 	char				data_sect;
 	char				bss_sect;

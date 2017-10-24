@@ -51,7 +51,7 @@ t_flags	parse_cmd(int ac, char **av)
 		else
 		{
 			flags.nb_files++;
-			flags.files[flags.nb_files - 1] = ft_strdup(av[i]);
+			flags.files[flags.nb_files - 1] = av[i];
 		}
 	}
 	if (!flags.nb_files)
@@ -74,53 +74,55 @@ char	*find_arch(char **env)
 	return ("");
 }
 
-int		main(int ac, char **av, char **env)
+int		open_file(void **ptr, t_flags *flags)
 {
 	int			fd;
-	int			exit_code;
-	int			i;
 	struct stat	buf;
+
+	if ((fd = open(*(flags->files), O_RDONLY)) < 0)
+	{
+		write(2, "ft_nm: ", 6);
+		ft_putstr_fd(*(flags->files), 2);
+		write(2, " No such file or directory.\n", 28);
+		flags->exit_code = EXIT_FAILURE;
+		flags->files++;
+		if (*(flags->files))
+			return (open_file(ptr, flags));
+		else
+			return (EXIT_FAILURE);
+	}
+	if (fstat(fd, &buf) > 0)
+		return (EXIT_FAILURE);
+	if ((*ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
+		== MAP_FAILED)
+		return (EXIT_FAILURE);
+	flags->file_size = buf.st_size;
+	return (0);
+}
+
+int		main(int ac, char **av, char **env)
+{
 	void		*ptr;
 	char		**tmp;
 	t_flags		flags;
 
-	i = -1;
-	exit_code = EXIT_SUCCESS;
 	flags = parse_cmd(ac, av);
 	tmp = flags.files;
 	flags.cputype = cpu_type(find_arch(env));
-	while (++i < flags.nb_files)
+	ptr = NULL;
+	while (*flags.files)
 	{
-		if ((fd = open(*(flags.files), O_RDONLY)) < 0)
-		{
-			write(2, "ft_nm: ", 6);
-			ft_putstr_fd(*(flags.files), 2);
-			write(2, " No such file or directory.\n", 28);
-			exit_code = EXIT_FAILURE;
-			flags.files++;
-			continue;
-		}
-		if (fstat(fd, &buf) > 0)
-		{
-			perror("fstat");
+		if (open_file(&ptr, &flags) > 0)
 			return (EXIT_FAILURE);
-		}
-		if ((ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
-			== MAP_FAILED)
-		{
-			perror("mmap");
-			return (EXIT_FAILURE);
-		}
 		nm(ptr, flags);
-		if (munmap(ptr, buf.st_size) < 0)
+		if (munmap(ptr, flags.file_size) < 0)
 		{
 			perror("munmap");
 			return (EXIT_FAILURE);
 		}
 		reset_flags(&flags, 0);
-		ft_strdel((flags.files));
 		flags.files++;
 	}
 	free(tmp);
-	return (exit_code);
+	return (flags.exit_code);
 }
