@@ -84,18 +84,18 @@ int		open_file(void **ptr, t_flags *flags)
 		write(2, "ft_nm: ", 6);
 		ft_putstr_fd(*(flags->files), 2);
 		write(2, " No such file or directory.\n", 28);
-		flags->exit_code = EXIT_FAILURE;
+		flags->exit_code = OPEN_ERROR;
 		flags->files++;
 		if (*(flags->files))
 			return (open_file(ptr, flags));
 		else
-			return (EXIT_FAILURE);
+			return (flags->exit_code);
 	}
 	if (fstat(fd, &buf) > 0)
-		return (EXIT_FAILURE);
+		return (FSTAT_ERROR);
 	if ((*ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
 		== MAP_FAILED)
-		return (EXIT_FAILURE);
+		return (MMAP_ERROR);
 	flags->file_size = buf.st_size;
 	return (0);
 }
@@ -113,12 +113,12 @@ int		main(int ac, char **av, char **env)
 	while (*flags.files)
 	{
 		if (open_file(&ptr, &flags) > 0)
-			return (EXIT_FAILURE);
-		nm(ptr, flags);
+			return (flags.exit_code);
+		flags.exit_code = nm(ptr, flags);
 		if (munmap(ptr, flags.file_size) < 0)
 		{
 			perror("munmap");
-			return (EXIT_FAILURE);
+			return (flags.exit_code);
 		}
 		reset_flags(&flags, 0);
 		flags.files++;

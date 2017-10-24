@@ -15,7 +15,7 @@ t_symbol	*create_elem64(struct nlist_64 symbol, char *name, t_flags flags)
 	return (new);
 }
 
-void		organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
+int			organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
 {
 	int				i;
 	uint32_t		offset;
@@ -25,6 +25,8 @@ void		organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
 	t_symbol		*new;
 
 	i = 0;
+	if (symoff >= flags.file_size || stroff >= flags.file_size)
+		return (FILE_CORRUPTED);
 	array = ptr + symoff;
 	str_table = ptr + stroff;
 	symbols = NULL;
@@ -33,13 +35,16 @@ void		organizer64(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
 		if (!(array[i].n_type & N_STAB) || flags.a)
 		{
 			offset = flags.should_swap ? swap_32(array[i].n_un.n_strx) : array[i].n_un.n_strx;
+			if ((offset = flags.should_swap ? swap_32(array[i].n_un.n_strx) : array[i].n_un.n_strx) >= flags.file_size - stroff)
+				return (FILE_CORRUPTED);
 			if (!(new = create_elem64(array[i], str_table + offset, flags)))
-				return ;
+				return (MALLOC_ERROR);
 			insert_at(&symbols, new, flags);
 		}
 		i++;
 	}
 	print_output(symbols, flags);
+	return (0);
 }
 
 void		get_sects_flags64(struct segment_command_64 *seg, t_flags *flags)
@@ -66,7 +71,7 @@ void		get_sects_flags64(struct segment_command_64 *seg, t_flags *flags)
 	flags->nb_sects += nsects;
 }
 
-void		handle_64(void *ptr, t_flags flags)
+int			handle_64(void *ptr, t_flags flags)
 {
 	int							ncmds;
 	uint32_t					cmd;
@@ -83,13 +88,13 @@ void		handle_64(void *ptr, t_flags flags)
 		if (lc->cmd == LC_SYMTAB)
 		{
 			command = swap_symtab_command((struct symtab_command*)lc, flags);
-			organizer64(command.nsyms, command.symoff, command.stroff,
-				ptr, flags);
-			break ;
+			return (organizer64(command.nsyms, command.symoff, command.stroff,
+				ptr, flags));
 		}
 		else if (lc->cmd == LC_SEGMENT_64)
 			get_sects_flags64((struct segment_command_64*)lc, &flags);
 		lc = (void *)lc +
 			(flags.should_swap ? swap_32(lc->cmdsize) : lc->cmdsize);
 	}
+	return (NO_SYMTAB);
 }

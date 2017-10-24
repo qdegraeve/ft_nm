@@ -38,25 +38,20 @@ void	insert_at(t_symbol **list, t_symbol *new, t_flags flags)
 	comp = flags.p ? no_comp : value_comp;
 	if (!flags.p && !flags.n)
 		comp = name_comp;
-	if (!*list)
-		*list = new;
-	else
+	while (tmp && (comp(new, tmp)) > 0)
 	{
-		while (tmp && (comp(new, tmp)) > 0)
+		if (!tmp->next || comp(new, tmp->next) <= 0)
 		{
-			if (!tmp->next || comp(new, tmp->next) <= 0)
-			{
-				new->next = tmp->next;
-				tmp->next = new;
-				return ;
-			}
-			tmp = tmp->next;
+			new->next = tmp->next;
+			tmp->next = new;
+			return ;
 		}
-		if (tmp == *list)
-		{
-			new->next = tmp;
-			*list = new;
-		}
+		tmp = tmp->next;
+	}
+	if (tmp == *list)
+	{
+		new->next = tmp;
+		*list = new;
 	}
 }
 
@@ -84,7 +79,7 @@ void	print_output(t_symbol *symbols, t_flags flags)
 	}
 }
 
-void	nm(void *ptr, t_flags flags)
+int		nm(void *ptr, t_flags flags)
 {
 	unsigned int		magic_number;
 
@@ -94,17 +89,18 @@ void	nm(void *ptr, t_flags flags)
 			magic_number == FAT_CIGAM)
 		flags.should_swap = 1;
 	if (magic_number == MH_MAGIC_64 || magic_number == MH_CIGAM_64)
-		handle_64(ptr, flags);
+		return (handle_64(ptr, flags));
 	else if (magic_number == MH_MAGIC || magic_number == MH_CIGAM)
-		handle_32(ptr, flags);
+		return (handle_32(ptr, flags));
 	else if (magic_number == FAT_MAGIC || magic_number == FAT_CIGAM)
-		handle_fat(ptr, flags);
+		return (handle_fat(ptr, flags));
 	else if (ft_strncmp(ARMAG, (char*)ptr, 8) == 0)
-		handle_lib(ptr, flags);
+		return (handle_lib(ptr, flags));
 	else
 	{
 		write(2, "ft_nm: ", 7);
 		ft_putstr_fd(*(flags.files), 2);
 		write(2, " The file was not recognized as a valid object file\n\n", 54);
+		return (FILE_NOT_VALID);
 	}
 }

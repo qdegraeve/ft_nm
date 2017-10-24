@@ -12,6 +12,13 @@
 # include "../libft/include/ft_printf.h"
 # include <ar.h>
 
+# define MALLOC_ERROR	1
+# define FILE_CORRUPTED 2
+# define FSTAT_ERROR	3
+# define OPEN_ERROR		4
+# define MMAP_ERROR		5
+# define NO_SYMTAB		6
+# define FILE_NOT_VALID 7
 
 union			u_cmp
 {
@@ -60,13 +67,14 @@ typedef struct	s_symbol
 /*
 ** NM handlers
 */
-void					nm(void *ptr, t_flags flags);
-void					handle_32(void *ptr, t_flags flags);
-void					handle_64(void *ptr, t_flags flags);
-void					handle_lib(void *ptr, t_flags flags);
-void					organizer32(int nsyms, int symoff,
+int						nm(void *ptr, t_flags flags);
+int						handle_32(void *ptr, t_flags flags);
+int						handle_64(void *ptr, t_flags flags);
+int						handle_lib(void *ptr, t_flags flags);
+int						handle_fat(void *ptr, t_flags flags);
+int						organizer32(int nsyms, int symoff,
 							int stroff, void *ptr, t_flags flags);
-void					organizer64(int nsyms, int symoff,
+int						organizer64(int nsyms, int symoff,
 							int stroff, void *ptr, t_flags flags);
 char					get_type(uint8_t n_type, uint8_t n_sect, t_flags flags);
 t_symbol				*create_elem64(struct nlist_64 symbol,
@@ -76,7 +84,6 @@ t_symbol				*create_elem32(struct nlist symbol,
 void					insert_at(t_symbol **list, t_symbol *new,
 							t_flags flags);
 void					print_output(t_symbol *symbols, t_flags flags);
-void					handle_fat(void *ptr, t_flags flags);
 
 /*
 ** Shared functions

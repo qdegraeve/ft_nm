@@ -24,7 +24,7 @@ void				reset_flags(t_flags *flags, char fat)
 	flags->nb_sects = 0;
 }
 
-cpu_type_t			 cpu_type(char *cpu_type_name)
+cpu_type_t			cpu_type(char *cpu_type_name)
 {
 	static int	cpu_type_names_size;
 	int			i;
@@ -76,7 +76,7 @@ int					look_for_arch(struct fat_arch *fat_arch,
 	return (0);
 }
 
-void				handle_fat(void *ptr, t_flags flags)
+int					handle_fat(void *ptr, t_flags flags)
 {
 	unsigned int		i;
 	struct fat_arch		*fat_arch;
@@ -85,7 +85,7 @@ void				handle_fat(void *ptr, t_flags flags)
 	flags.nfat_arch = swap_32(((struct fat_header*)ptr)->nfat_arch);
 	fat_arch = (struct fat_arch*)(((struct fat_header*)ptr) + 1);
 	if (look_for_arch(fat_arch, ptr, flags.nfat_arch, flags))
-		return ;
+		return (0);
 	while (i++ < flags.nfat_arch)
 	{
 		reset_flags(&flags, 1);
@@ -93,10 +93,11 @@ void				handle_fat(void *ptr, t_flags flags)
 			write(1, "\n", 1);
 		ft_putstr(*(flags.files));
 		if (flags.nfat_arch > 1)
-			ft_printf(" (for architecture %s)", cpu_type_name(swap_32(fat_arch->cputype)));
+			ft_printf(" (for architecture %s)",
+				cpu_type_name(swap_32(fat_arch->cputype)));
 		write(1, ":\n", 2);
-
 		nm((void*)ptr + (swap_32(fat_arch->offset)), flags);
 		fat_arch++;
 	}
+	return (0);
 }
