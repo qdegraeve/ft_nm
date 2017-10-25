@@ -55,13 +55,22 @@ void	insert_at(t_symbol **list, t_symbol *new, t_flags flags)
 	}
 }
 
+int		file_corrupted(t_flags *flags)
+{
+	write(2, "ft_nm: ", 7);
+	ft_putstr_fd(*(flags->files), 2);
+	write(2, " The file is corrupted.\n\n", 27);
+	flags->exit_code = FILE_CORRUPTED;
+	return (flags->exit_code);
+}
+
 void	print_output(t_symbol *symbols, t_flags flags)
 {
 	t_symbol	*to_del;
 	int			size;
 
 	size = flags.is_32 ? 8 : 16;
-	if (!flags.is_fat)
+	if (!flags.is_fat && !flags.is_lib && flags.nb_files > 1)
 		ft_printf("\n%s:\n", *(flags.files));
 	while (symbols)
 	{
@@ -91,7 +100,10 @@ int		nm(void *ptr, t_flags flags)
 	if (magic_number == MH_MAGIC_64 || magic_number == MH_CIGAM_64)
 		return (handle_64(ptr, flags));
 	else if (magic_number == MH_MAGIC || magic_number == MH_CIGAM)
+	{
+		flags.is_32 = 1;
 		return (handle_32(ptr, flags));
+	}
 	else if (magic_number == FAT_MAGIC || magic_number == FAT_CIGAM)
 		return (handle_fat(ptr, flags));
 	else if (ft_strncmp(ARMAG, (char*)ptr, 8) == 0)

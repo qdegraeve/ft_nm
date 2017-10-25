@@ -117,8 +117,7 @@ int		main(int ac, char **av, char **env)
 		flags.exit_code = nm(ptr, flags);
 		if (munmap(ptr, flags.file_size) < 0)
 		{
-			perror("munmap");
-			return (flags.exit_code);
+			return (MUNMAP_ERROR);
 		}
 		reset_flags(&flags, 0);
 		flags.files++;

@@ -1,6 +1,6 @@
 #include "ft_nm.h"
 
-t_symbol	*create_elem32(struct nlist symbol, char *name, t_flags flags)
+static t_symbol	*create_elem32(struct nlist symbol, char *name, t_flags flags)
 {
 	t_symbol		*new;
 
@@ -15,38 +15,47 @@ t_symbol	*create_elem32(struct nlist symbol, char *name, t_flags flags)
 	return (new);
 }
 
-int			organizer32(int nsyms, int symoff, int stroff, void *ptr, t_flags flags)
+static int		add_to_list32(struct nlist array, t_flags *flags,
+	struct symtab_command command, void *ptr)
 {
-	int				i;
 	uint32_t		offset;
-	struct nlist	*array;
-	char			*str_table;
-	t_symbol		*symbols;
 	t_symbol		*new;
+	char			*str_table;
 
-	i = 0;
-	if (symoff >= flags.file_size || stroff >= flags.file_size)
-		return (FILE_CORRUPTED);
-	array = ptr + symoff;
-	str_table = ptr + stroff;
-	symbols = NULL;
-	while (i < nsyms)
-	{
-		if (!(array[i].n_type & N_STAB) || flags.a)
-		{
-			if ((offset = flags.should_swap ? swap_32(array[i].n_un.n_strx) : array[i].n_un.n_strx) >= flags.file_size - stroff)
-				return (FILE_CORRUPTED);
-			if (!(new = create_elem32(array[i], str_table + offset, flags)))
-				return (MALLOC_ERROR);
-			insert_at(&symbols, new, flags);
-		}
-		i++;
-	}
-	print_output(symbols, flags);
+	str_table = ptr + command.stroff;
+	if ((offset = flags->should_swap ? swap_32(array.n_un.n_strx) :
+		array.n_un.n_strx) >= flags->file_size - command.stroff)
+		return (file_corrupted(flags));
+	if (!(new = create_elem32(array, str_table + offset, *flags)))
+		return ((flags->exit_code = MALLOC_ERROR));
+	insert_at(&(flags->symbols), new, *flags);
 	return (0);
 }
 
-void		get_sects_flags32(struct segment_command *seg, t_flags *flags)
+static int		organizer32(struct symtab_command command, void *ptr,
+	t_flags flags)
+{
+	uint32_t		i;
+	struct nlist	*array;
+
+	i = 0;
+	if (command.symoff >= flags.file_size || command.stroff >= flags.file_size)
+		return (FILE_CORRUPTED);
+	array = ptr + command.symoff;
+	while (i < command.nsyms)
+	{
+		if (!(array[i].n_type & N_STAB) || flags.a)
+		{
+			if (add_to_list32(array[i], &flags, command, ptr) > 0)
+				return (flags.exit_code);
+		}
+		i++;
+	}
+	print_output(flags.symbols, flags);
+	return (0);
+}
+
+static void		get_sects_flags32(struct segment_command *seg, t_flags *flags)
 {
 	struct section		*sect;
 	uint32_t			nsects;
@@ -70,7 +79,7 @@ void		get_sects_flags32(struct segment_command *seg, t_flags *flags)
 	flags->nb_sects += nsects;
 }
 
-int		handle_32(void *ptr, t_flags flags)
+int				handle_32(void *ptr, t_flags flags)
 {
 	int							ncmds;
 	uint32_t					cmd;
@@ -78,7 +87,6 @@ int		handle_32(void *ptr, t_flags flags)
 	struct load_command			*lc;
 	struct symtab_command		command;
 
-	flags.is_32 = 1;
 	header = (struct mach_header*)ptr;
 	ncmds = flags.should_swap ? swap_32(header->ncmds) : header->ncmds;
 	lc = ptr + sizeof(struct mach_header);
@@ -88,13 +96,13 @@ int		handle_32(void *ptr, t_flags flags)
 		if (cmd == LC_SYMTAB)
 		{
 			command = swap_symtab_command((struct symtab_command*)lc, flags);
-			return (organizer32(command.nsyms, command.symoff, command.stroff,
-				ptr, flags));
+			return (organizer32(command, ptr, flags));
 		}
 		else if (cmd == LC_SEGMENT)
 			get_sects_flags32((struct segment_command*)lc, &flags);
-		lc = (void *)lc +
-			(flags.should_swap ? swap_32(lc->cmdsize) : lc->cmdsize);
+		if ((lc = (void *)lc + (flags.should_swap ? swap_32(lc->cmdsize) :
+			lc->cmdsize)) >= (struct load_command*)(ptr + flags.file_size))
+			return (file_corrupted(&flags));
 	}
 	return (NO_SYMTAB);
 }

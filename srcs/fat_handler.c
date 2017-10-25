@@ -11,6 +11,7 @@ static t_cpu_type_names		g_cpu_type_names[] = {
 void				reset_flags(t_flags *flags, char fat)
 {
 	flags->is_fat = fat;
+	flags->is_lib = 0;
 	if (!fat)
 	{
 		flags->nfat_arch = 0;
@@ -22,6 +23,7 @@ void				reset_flags(t_flags *flags, char fat)
 	flags->data_sect = 0;
 	flags->bss_sect = 0;
 	flags->nb_sects = 0;
+	flags->symbols = NULL;
 }
 
 cpu_type_t			cpu_type(char *cpu_type_name)
@@ -60,15 +62,20 @@ int					look_for_arch(struct fat_arch *fat_arch,
 	void *ptr, unsigned int nfat_arch, t_flags flags)
 {
 	unsigned int		i;
+	uint32_t			offset;
 
 	i = 0;
+	offset = 0;
 	while (i++ < nfat_arch)
 	{
 		if (flags.cputype == (cpu_type_t)swap_32(fat_arch->cputype))
 		{
 			reset_flags(&flags, 1);
 			flags.nfat_arch = 1;
-			nm((void*)ptr + (swap_32(fat_arch->offset)), flags);
+			if ((offset = swap_32(fat_arch->offset)) < flags.file_size)
+				nm((void*)ptr + offset, flags);
+			else
+				file_corrupted(&flags);
 			return (1);
 		}
 		fat_arch++;
@@ -80,8 +87,10 @@ int					handle_fat(void *ptr, t_flags flags)
 {
 	unsigned int		i;
 	struct fat_arch		*fat_arch;
+	uint32_t			offset;
 
 	i = 0;
+	offset = 0;
 	flags.nfat_arch = swap_32(((struct fat_header*)ptr)->nfat_arch);
 	fat_arch = (struct fat_arch*)(((struct fat_header*)ptr) + 1);
 	if (look_for_arch(fat_arch, ptr, flags.nfat_arch, flags))
@@ -89,15 +98,16 @@ int					handle_fat(void *ptr, t_flags flags)
 	while (i++ < flags.nfat_arch)
 	{
 		reset_flags(&flags, 1);
-		if (flags.nfat_arch > 1)
-			write(1, "\n", 1);
+		(flags.nfat_arch > 1) ? write(1, "\n", 1) : 0;
 		ft_putstr(*(flags.files));
 		if (flags.nfat_arch > 1)
 			ft_printf(" (for architecture %s)",
 				cpu_type_name(swap_32(fat_arch->cputype)));
 		write(1, ":\n", 2);
-		nm((void*)ptr + (swap_32(fat_arch->offset)), flags);
+		if ((offset += swap_32(fat_arch->offset)) >= flags.file_size)
+			return (file_corrupted(&flags));
+		flags.exit_code = nm((void*)ptr + (swap_32(fat_arch->offset)), flags);
 		fat_arch++;
 	}
-	return (0);
+	return (flags.exit_code);
 }

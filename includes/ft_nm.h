@@ -19,6 +19,7 @@
 # define MMAP_ERROR		5
 # define NO_SYMTAB		6
 # define FILE_NOT_VALID 7
+# define MUNMAP_ERROR		5
 
 union			u_cmp
 {
@@ -31,11 +32,22 @@ typedef struct	s_cpu_type_names {
 	const char			*cpu_name;
 }				t_cpu_type_names;
 
+typedef struct	s_symbol
+{
+	char				type;
+	uint8_t				n_type;
+	uint8_t				n_sect;
+	uint64_t			value;
+	char				*name;
+	struct s_symbol		*next;
+}				t_symbol;
+
 typedef struct	s_flags
 {
 	char				exit_code;
 	char				should_swap;
 	char				is_fat;
+	char				is_lib;
 	char				p;
 	char				a;
 	char				n;
@@ -52,17 +64,8 @@ typedef struct	s_flags
 	unsigned int		nfat_arch;
 	cpu_type_t			cputype;
 	char				**files;
+	t_symbol			*symbols;
 }				t_flags;
-
-typedef struct	s_symbol
-{
-	char				type;
-	uint8_t				n_type;
-	uint8_t				n_sect;
-	uint64_t			value;
-	char				*name;
-	struct s_symbol		*next;
-}				t_symbol;
 
 /*
 ** NM handlers
@@ -72,15 +75,7 @@ int						handle_32(void *ptr, t_flags flags);
 int						handle_64(void *ptr, t_flags flags);
 int						handle_lib(void *ptr, t_flags flags);
 int						handle_fat(void *ptr, t_flags flags);
-int						organizer32(int nsyms, int symoff,
-							int stroff, void *ptr, t_flags flags);
-int						organizer64(int nsyms, int symoff,
-							int stroff, void *ptr, t_flags flags);
 char					get_type(uint8_t n_type, uint8_t n_sect, t_flags flags);
-t_symbol				*create_elem64(struct nlist_64 symbol,
-							char *name, t_flags flags);
-t_symbol				*create_elem32(struct nlist symbol,
-							char *name, t_flags flags);
 void					insert_at(t_symbol **list, t_symbol *new,
 							t_flags flags);
 void					print_output(t_symbol *symbols, t_flags flags);
@@ -90,6 +85,7 @@ void					print_output(t_symbol *symbols, t_flags flags);
 */
 void					reset_flags(t_flags *flags, char fat);
 cpu_type_t				cpu_type(char *cpu_type_name);
+int						file_corrupted(t_flags *flags);
 
 /*
 ** Comparison function
