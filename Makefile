@@ -1,78 +1,22 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: qdegraev <marvin@42.fr>                    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2017/08/11 13:37:44 by qdegraev          #+#    #+#              #
-#    Updated: 2017/08/11 13:50:39 by qdegraev         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+all :
+	@make -C nm_files/
+	@make -C otool_files/
+	@cp nm_files/ft_nm .
+	@cp otool_files/ft_otool .
+	@echo "\033[1;34m --NM_OTTOL-- :\033[m \033[1;32m DONE !\033[m"
 
-NAME = ft_nm
+clean :
+	@make clean -C nm_files/
+	@make clean -C otool_files/
+	@echo "\033[1;34m --NM_OTTOL-- :\033[m \033[1;32m DELETE OBJ FILES !\033[m"
 
-CC = clang
-CFLAGS = -Wall -Wextra -Werror
-LDFLAGS = -L libft -lft
+fclean : clean
+	@rm -rf ft_nm
+	@rm -rf ft_otool
+	@make fclean -C nm_files/
+	@make fclean -C otool_files/
+	@echo "\033[1;34m --NM_OTTOL-- :\033[m \033[1;32m DELETE project !\033[m"
 
-LIBPATH = libft/
-LIB = $(LIBPATH)/libft.a
+re : fclean all
 
-INCLUDES = includes/
-
-VPATH = srcs/
-SRCS = ft_nm.c \
-	   handler_64.c \
-	   handler_32.c \
-	   fat_handler.c \
-	   lib_handler.c \
-	   shared.c \
-	   comp_tools.c \
-	   swap.c
-
-OBJDIR = objs/
-OBJS = $(patsubst %.c, $(OBJDIR)%.o, $(SRCS))
-
-default: all
-
-all: $(LIB) $(NAME)
-	@echo " # sh : Job done $(shell pwd)/$(NAME)"
-
-$(NAME): $(OBJS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(NAME) $(OBJS)
-
-$(LIB):
-	@make -C $(LIBPATH)
-
-$(OBJDIR)%.o: %.c $(OBJDIR)
-	@echo " + sh : Compiling $(OBJ_DIR) < $^"
-	@$(CC) $(CFLAGS) -o $@ -c $< -I libft/include -I $(INCLUDES)
-
-$(OBJDIR):
-	mkdir $(OBJDIR)
-
-clean:
-	make -C libft/ clean
-	@echo " $(shell\
-		if [ -d $(OBJ_DIR) ]; then\
-			echo "- sh : Removing $(OBJ_DIR) with";\
-			ls $(OBJ_DIR) | wc -w; echo "*.o";\
-			rm -Rf $(OBJ_DIR);\
-		else\
-			echo "# sh : Nothing to clean";\
-		fi)"
-
-fclean: clean
-	make -C libft/ fclean
-	@echo " $(shell\
-		if [ -f $(NAME) ]; then\
-			echo "- sh : Removing $ $(NAME) ";\
-			rm -f $(NAME);\
-		else\
-			echo "# sh : Nothing to fclean";\
-		fi)"
-
-re: fclean all
-
-.PHONY: re clean fclean all
+.PHONY : all re clean fclean

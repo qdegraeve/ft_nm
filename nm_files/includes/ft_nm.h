@@ -9,7 +9,7 @@
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <stdlib.h>
-# include "../libft/include/ft_printf.h"
+# include "../../libft/include/ft_printf.h"
 # include <ar.h>
 
 # define MALLOC_ERROR	1
