@@ -28,6 +28,9 @@ static int		add_to_list32(struct nlist array, t_flags *flags,
 		return (file_corrupted(flags));
 	if (!(new = create_elem32(array, str_table + offset, *flags)))
 		return ((flags->exit_code = MALLOC_ERROR));
+	if (((new->type == 'u' || new->type == 'U') && flags->u_up) ||
+		((new->type != 'u' && new->type != 'U') && flags->u))
+		return (0);
 	insert_at(&(flags->symbols), new, *flags);
 	return (0);
 }
@@ -51,7 +54,8 @@ static int		organizer32(struct symtab_command command, void *ptr,
 		}
 		i++;
 	}
-	print_output(flags.symbols, flags);
+	(flags.r && !flags.p) ? print_reverse(flags.symbols, flags) :
+		print_output(flags.symbols, flags);
 	return (0);
 }
 

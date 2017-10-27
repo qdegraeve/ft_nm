@@ -8,11 +8,10 @@ int		handle_lib(void *ptr, t_flags flags)
 
 	len = 0;
 	size = 0;
-	if (flags.file_size > 68 && (size = ft_atoi(ptr + 56)) &&
-		size + 68 < flags.file_size)
+	if ((flags.is_lib = 1) && flags.file_size > 68 &&
+		(size = ft_atoi(ptr + 56)) && size + 68 < flags.file_size)
 		ptr += (size + 68);
 	offset = size + 68;
-	flags.is_lib = 1;
 	ft_printf("Archive : %s\n", *(flags.files));
 	while (size > 0 && *(char*)ptr)
 	{

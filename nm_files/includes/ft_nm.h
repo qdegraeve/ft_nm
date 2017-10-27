@@ -19,20 +19,20 @@
 # define MMAP_ERROR		5
 # define NO_SYMTAB		6
 # define FILE_NOT_VALID 7
-# define MUNMAP_ERROR		5
+# define MUNMAP_ERROR	5
 
-union			u_cmp
+union					u_cmp
 {
 	char				*str;
 	unsigned long		value;
 };
 
-typedef struct	s_cpu_type_names {
+typedef struct			s_cpu_type_names {
 	cpu_type_t			cputype;
 	const char			*cpu_name;
-}				t_cpu_type_names;
+}						t_cpu_type_names;
 
-typedef struct	s_symbol
+typedef struct			s_symbol
 {
 	char				type;
 	uint8_t				n_type;
@@ -40,9 +40,9 @@ typedef struct	s_symbol
 	uint64_t			value;
 	char				*name;
 	struct s_symbol		*next;
-}				t_symbol;
+}						t_symbol;
 
-typedef struct	s_flags
+typedef struct			s_flags
 {
 	char				exit_code;
 	char				should_swap;
@@ -53,6 +53,7 @@ typedef struct	s_flags
 	char				n;
 	char				r;
 	char				u;
+	char				j;
 	char				u_up;
 	char				is_32;
 	off_t				file_size;
@@ -65,7 +66,7 @@ typedef struct	s_flags
 	cpu_type_t			cputype;
 	char				**files;
 	t_symbol			*symbols;
-}				t_flags;
+}						t_flags;
 
 /*
 ** NM handlers
@@ -78,14 +79,22 @@ int						handle_fat(void *ptr, t_flags flags);
 char					get_type(uint8_t n_type, uint8_t n_sect, t_flags flags);
 void					insert_at(t_symbol **list, t_symbol *new,
 							t_flags flags);
-void					print_output(t_symbol *symbols, t_flags flags);
 
 /*
 ** Shared functions
 */
 void					reset_flags(t_flags *flags, char fat);
 cpu_type_t				cpu_type(char *cpu_type_name);
+void					print_reverse(t_symbol *symbols, t_flags flags);
+void					print_output(t_symbol *symbols, t_flags flags);
+
+/*
+** Errors functions
+*/
 int						file_corrupted(t_flags *flags);
+void					unknown_flag(char flag);
+void					too_much(char flag);
+
 
 /*
 ** Comparison function

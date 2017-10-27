@@ -1,12 +1,5 @@
 #include "ft_otool.h"
 
-void	unknown_flag(char flag)
-{
-	ft_printf("Unknown command : %c\nUsage : ./ft_nm -parnuU [ files ]\n",
-		flag);
-	exit(EXIT_FAILURE);
-}
-
 void	parse_flags(char *arg, t_flags *flags)
 {
 	arg++;

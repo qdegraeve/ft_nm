@@ -78,7 +78,7 @@ int					look_for_arch(struct fat_arch *fat_arch,
 	return (0);
 }
 
-int					handle_fat(void *ptr, t_flags flags)
+int					handle_fat(void *ptr, t_flags fgs)
 {
 	unsigned int		i;
 	struct fat_arch		*fat_arch;
@@ -86,24 +86,23 @@ int					handle_fat(void *ptr, t_flags flags)
 
 	i = 0;
 	offset = 0;
-	flags.nfat_arch = swap_32(((struct fat_header*)ptr)->nfat_arch);
+	fgs.nfat_arch = swap_32(((struct fat_header*)ptr)->nfat_arch);
 	fat_arch = (struct fat_arch*)(((struct fat_header*)ptr) + 1);
-	if (look_for_arch(fat_arch, ptr, flags.nfat_arch, flags))
+	if (look_for_arch(fat_arch, ptr, fgs.nfat_arch, fgs))
 		return (0);
-	while (i++ < flags.nfat_arch)
+	while (i++ < fgs.nfat_arch && fgs.exit_code == 0)
 	{
-		reset_flags(&flags, 1);
-		(flags.nfat_arch > 1) ? write(1, "\n", 1) : 0;
-		ft_putstr(*(flags.files));
-		if (flags.nfat_arch > 1)
+		reset_flags(&fgs, 1);
+		(fgs.nfat_arch > 1) ? write(1, "\n", 1) : 0;
+		ft_putstr(*(fgs.files));
+		if (fgs.nfat_arch > 1)
 			ft_printf(" (for architecture %s)",
 				cpu_type_name(swap_32(fat_arch->cputype)));
 		write(1, ":\n", 2);
-		if ((offset += swap_32(fat_arch->offset)) >= flags.file_size)
-			return (file_corrupted(&flags));
-		if ((flags.exit_code = otool((void*)ptr + (swap_32(fat_arch->offset)), flags)) > 0)
-			break ;
+		if ((offset += swap_32(fat_arch->offset)) >= fgs.file_size)
+			return (file_corrupted(&fgs));
+		fgs.exit_code = otool((void*)ptr + (swap_32(fat_arch->offset)), fgs);
 		fat_arch++;
 	}
-	return (flags.exit_code);
+	return (fgs.exit_code);
 }

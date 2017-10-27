@@ -55,15 +55,6 @@ void	insert_at(t_symbol **list, t_symbol *new, t_flags flags)
 	}
 }
 
-int		file_corrupted(t_flags *flags)
-{
-	write(2, "ft_nm: ", 7);
-	ft_putstr_fd(*(flags->files), 2);
-	write(2, " The file is corrupted.\n\n", 27);
-	flags->exit_code = FILE_CORRUPTED;
-	return (flags->exit_code);
-}
-
 void	print_output(t_symbol *symbols, t_flags flags)
 {
 	t_symbol	*to_del;
@@ -74,18 +65,48 @@ void	print_output(t_symbol *symbols, t_flags flags)
 		ft_printf("\n%s:\n", *(flags.files));
 	while (symbols)
 	{
-		if ((symbols->n_type & N_TYPE) == N_PBUD ||
-				(symbols->n_type & N_TYPE) == N_UNDF)
-			ft_printf("%*c ", size, ' ');
-		else
-			ft_printf("%0*llx ", size, symbols->value);
-		ft_printf("%c ", symbols->type);
+		if (!flags.u && !flags.j)
+		{
+			if ((symbols->n_type & N_TYPE) == N_PBUD ||
+					(symbols->n_type & N_TYPE) == N_UNDF)
+				ft_printf("%*c ", size, ' ');
+			else
+				ft_printf("%0*llx ", size, symbols->value);
+			ft_printf("%c ", symbols->type);
+		}
 		ft_printf("%s\n", symbols->name);
 		free(symbols->name);
 		to_del = symbols;
 		symbols = symbols->next;
 		free(to_del);
 	}
+}
+
+void	print_reverse(t_symbol *symbols, t_flags flags)
+{
+	t_symbol	*to_del;
+	int			size;
+
+	size = flags.is_32 ? 8 : 16;
+	if (!symbols->next && !flags.is_fat && !flags.is_lib
+		&& flags.nb_files > 1)
+		ft_printf("\n%s:\n", *(flags.files));
+	if (symbols->next)
+		print_reverse(symbols->next, flags);
+	if (!flags.u && !flags.j)
+	{
+		if ((symbols->n_type & N_TYPE) == N_PBUD ||
+				(symbols->n_type & N_TYPE) == N_UNDF)
+			ft_printf("%*c ", size, ' ');
+		else
+			ft_printf("%0*llx ", size, symbols->value);
+		ft_printf("%c ", symbols->type);
+	}
+	ft_printf("%s\n", symbols->name);
+	free(symbols->name);
+	to_del = symbols;
+	symbols = symbols->next;
+	free(to_del);
 }
 
 int		nm(void *ptr, t_flags flags)

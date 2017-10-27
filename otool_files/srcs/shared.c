@@ -1,14 +1,5 @@
 #include "ft_otool.h"
 
-int		file_corrupted(t_flags *flags)
-{
-	write(2, "ft_nm: ", 7);
-	ft_putstr_fd(*(flags->files), 2);
-	write(2, " The file is corrupted.\n\n", 27);
-	flags->exit_code = FILE_CORRUPTED;
-	return (flags->exit_code);
-}
-
 int		otool(void *ptr, t_flags flags)
 {
 	unsigned int		magic_number;

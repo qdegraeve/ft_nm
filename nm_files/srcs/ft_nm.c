@@ -1,18 +1,5 @@
 #include "ft_nm.h"
 
-void	too_much(char flag)
-{
-	ft_printf("flag -%c can appear only 0 or 1 time\n", flag);
-	exit(EXIT_FAILURE);
-}
-
-void	unknown_flag(char flag)
-{
-	ft_printf("Unknown command : %c\nUsage : ./ft_nm -parnuU [ files ]\n",
-		flag);
-	exit(EXIT_FAILURE);
-}
-
 void	parse_flags(char *arg, t_flags *flags)
 {
 	arg++;
@@ -28,6 +15,8 @@ void	parse_flags(char *arg, t_flags *flags)
 			(*flags).n ? too_much(*arg) : (*flags).n++;
 		else if (*arg == 'u')
 			(*flags).u ? too_much(*arg) : (*flags).u++;
+		else if (*arg == 'j')
+			(*flags).j ? too_much(*arg) : (*flags).j++;
 		else if (*arg == 'U')
 			(*flags).u_up ? too_much(*arg) : (*flags).u_up++;
 		else

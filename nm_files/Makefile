@@ -29,7 +29,8 @@ SRCS = ft_nm.c \
 	   lib_handler.c \
 	   shared.c \
 	   comp_tools.c \
-	   swap.c
+	   swap.c \
+	   errors.c
 
 OBJDIR = objs/
 OBJS = $(patsubst %.c, $(OBJDIR)%.o, $(SRCS))
